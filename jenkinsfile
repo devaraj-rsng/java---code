@@ -1,0 +1,25 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('git fetch') {
+            steps {
+                echo 'fetch from git'
+                git branch: 'main', url: 'https://github.com/devaraj-rsng/java---code.git'
+            }
+        }
+        stage('maven') {
+            steps {
+                echo 'Hello World'
+                sh 'mvn clean install'
+            }
+        }
+        stage('deploy to apache') {
+            steps {
+                echo 'Hello World'
+                deploy adapters: [tomcat9(alternativeDeploymentContext: '', credentialsId: 'tomcat', path: '', url: 'http://35.153.144.253:8090/')], contextPath: 'MC-APP', war: '**/*.war'
+                
+            }
+        }
+    }
+}
