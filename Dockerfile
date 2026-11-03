@@ -1,7 +1,7 @@
 FROM maven as buildstage
 RUN mkdir /opt/mindcircuit16d
 WORKDIR /opt/mindcircuit16d
-COPY ..
+COPY . .
 RUN mvn clean install
 
 FROM tomcat
