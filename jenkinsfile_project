@@ -1,0 +1,60 @@
+pipeline {
+    agent any
+	
+	tools {
+		maven 'maven3'
+		}
+
+    stages {
+        stage('git clone') {
+            steps {
+                echo 'cloning the code'
+				git branch: 'main',url:'https://github.com/devaraj-rsng/java---code.git'
+             }
+        }
+
+		stage('artifact generation') {
+			steps {
+				echo 'building artifacts'
+				sh 'mvn clean package'
+				}
+			}
+		stage('building docker image'){
+			steps {
+				echo 'building docker image'
+				sh 'docker build -t devaraj3007/devopsproject:${BUILD_NUMBER} .'
+				}
+			}
+		stage('push docker image'){
+			steps {
+				script {
+					withCredentials([string(credentialsId: 'dockerhub', variable: 'dockerhub')]) {
+						sh 'docker login -u devaraj3007 -p ${dockerhub}'
+						}
+					sh 'docker push devaraj3007/devopsproject:${BUILD_NUMBER}'
+				}
+			}}
+		stage ('push to code'){
+			environment {
+				GIT_REPO_NAME= "java---code"
+				GIT_USER_NAME= "devaraj-rsng"
+			}
+			steps{
+				script{
+					echo "updating the deployment file"
+					withCredentials([string(credentialsId: 'github', variable: 'githubtoken')]) {
+						sh '''
+							# configure git user
+							git config user.email "burledevaraj@rsnginfo.com"
+							git config user.name "deva"
+							
+							sed -i "s/devopsproject:.*/devopsproject:${BUILD_NUMBER}/g" deploymentfiles/deployment.yml
+							
+							git add .
+							git commit -m "updated delpoyment file to use ${BUILD_NUMBER} image"
+							git push https://${githubtoken}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME}.git HEAD:main '''
+							}
+						}	
+					}		
+    }
+}}
