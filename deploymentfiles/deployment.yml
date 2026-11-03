@@ -18,4 +18,4 @@ spec:
     spec: 
       containers: 
         - name: fb-image
-          image: devaraj3007/devopsproject:17
+          image: devaraj3007/devopsproject:18
